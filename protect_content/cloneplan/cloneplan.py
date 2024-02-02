@@ -44,7 +44,10 @@ def enrich_fields(cloneplan_dict, msg, key):
     if key == "video":
         cloneplan_dict["duration"] = msg["video"]["duration"]
         cloneplan_dict["file_size"] = msg["video"]["file_size"]
-        cloneplan_dict["file_name"] = msg["video"]["file_name"]
+        if not cloneplan_dict.get("file_name"):
+            cloneplan_dict["file_name"] = msg["video"]["file_unique_id"]
+        else:
+            cloneplan_dict["file_name"] = msg["video"]["file_name"]
         return cloneplan_dict
     if key == "document":
         cloneplan_dict["file_size"] = msg["document"]["file_size"]
