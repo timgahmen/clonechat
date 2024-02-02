@@ -10,7 +10,7 @@ from pathlib import Path
 import pyrogram
 from pyrogram.errors import ChannelInvalid, FloodWait, PeerIdInvalid
 
-from setup import version
+version = 112
 
 DELAY_AMOUNT = 10
 
@@ -610,7 +610,7 @@ Ex. for documents and videos: 3,8 || Options:
 7 = Voice message
 8 = Videos
 9 = Polls"""
-parser.add_argument("--type", help=help_type)
+parser.add_argument("--type", help=help_type, default="0")
 options = parser.parse_args()
 
 if options.mode is None:
