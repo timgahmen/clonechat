@@ -1,3 +1,17 @@
+# IntelliJ IDE
+.idea
+.idea/*
+
+# Project files
+user/tasks/*
+protect_content/Cache/*
+protect_content/log_cloneplan/*
+
+# Session files
+user.session
+user_up.session
+user.session-journal
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
