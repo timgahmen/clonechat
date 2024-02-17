@@ -10,7 +10,7 @@ from pathlib import Path
 import pyrogram
 from pyrogram.errors import ChannelInvalid, FloodWait, PeerIdInvalid
 
-version = 112
+version = 112a
 
 DELAY_AMOUNT = 10
 
@@ -45,6 +45,13 @@ def foward_photo(message, destination_chat):
     except Exception as e:
         print(f"trying again... Due to: {e}")
         time.sleep(10)
+
+        tg.send_photo(
+            chat_id=destination_chat,
+            photo=photo_id,
+            caption="",
+        )
+        return
 
     foward_photo(message, destination_chat)
 
@@ -105,6 +112,15 @@ def foward_document(message, destination_chat):
         print(f"trying again... Due to: {e}")
         time.sleep(10)
 
+        tg.send_document(
+            chat_id=destination_chat,
+            document=document_id,
+            disable_notification=True,
+            caption="",
+        )
+        return
+
+    
     foward_document(message, destination_chat)
 
 
@@ -126,6 +142,13 @@ def foward_animation(message, destination_chat):
     except Exception as e:
         print(f"trying again... Due to: {e}")
         time.sleep(10)
+
+        tg.send_animation(
+            chat_id=destination_chat,
+            animation=animation_id,
+            disable_notification=True,
+            caption="",
+        )
 
     foward_animation(message, destination_chat)
 
@@ -149,6 +172,13 @@ def foward_audio(message, destination_chat):
         print(f"trying again... Due to: {e}")
         time.sleep(10)
 
+        tg.send_audio(
+            chat_id=destination_chat,
+            audio=audio_id,
+            disable_notification=True,
+            caption="",
+        )
+
     foward_audio(message, destination_chat)
 
 
@@ -170,6 +200,13 @@ def foward_voice(message, destination_chat):
     except Exception as e:
         print(f"trying again... Due to: {e}")
         time.sleep(10)
+
+        tg.send_voice(
+            chat_id=destination_chat,
+            voice=voice_id,
+            disable_notification=True,
+            caption="",
+        )
 
     foward_voice(message, destination_chat)
 
@@ -212,6 +249,14 @@ def foward_video(message, destination_chat):
     except Exception as e:
         print(f"trying again... Due to: {e}")
         time.sleep(10)
+        
+        tg.send_video(
+            chat_id=destination_chat,
+            video=video_id,
+            disable_notification=True,
+            caption="",
+        )
+        return
 
     foward_video(message, destination_chat)
 
@@ -238,6 +283,15 @@ def foward_poll(message, destination_chat):
         time.sleep(10)
 
     foward_poll(message, destination_chat)
+
+
+def get_caption(message):
+
+    if message.caption:
+        caption = message.caption.markdown
+    else:
+        caption = None
+    return caption
 
 
 def get_caption(message):
