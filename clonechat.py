@@ -10,7 +10,7 @@ from pathlib import Path
 import pyrogram
 from pyrogram.errors import ChannelInvalid, FloodWait, PeerIdInvalid
 
-version = 112a
+version = 112
 
 DELAY_AMOUNT = 10
 
