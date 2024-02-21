@@ -583,6 +583,98 @@ def ensure_connection(client_name):
 
 def main():
 
+    config_data = get_config_data(
+    path_file_config=os.path.join("user", "config.ini")
+    )
+    
+    USER_DELAY_SECONDS = float(config_data.get("user_delay_seconds"))
+    BOT_DELAY_SECONDS = float(config_data.get("bot_delay_seconds"))
+    SKIP_DELAY_SECONDS = float(config_data.get("skip_delay_seconds"))
+    
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--orig", help="chat_id of origin channel/group")
+    parser.add_argument("--dest", help="chat_id of destination channel/group")
+    parser.add_argument(
+        "--mode",
+        choices=["user", "bot"],
+        help='"user" is slow. "bot" requires token_bot in credentials',
+    )
+    parser.add_argument(
+        "--new", type=int, choices=[1, 2], help="1 = new, 2 = resume"
+    )
+    help_type = """list separated by comma of message type to be clonned:
+    Ex. for documents and videos: 3,8 || Options:
+    0 = All files
+    1 = Photos
+    2 = Text
+    3 = Documents (pdf, zip, rar...)
+    4 = Stickers
+    5 = Animation
+    6 = Audio files (music
+    7 = Voice message
+    8 = Videos
+    9 = Polls"""
+    parser.add_argument("--type", help=help_type, default="0")
+    options = parser.parse_args()
+    
+    if options.mode is None:
+        MODE = config_data.get("mode")
+    else:
+        MODE = options.mode
+    
+    
+    useraccount = ensure_connection("user")
+    print(f"{MODE=}")
+    if MODE == "bot":
+        bot = ensure_connection("bot")
+        tg = bot
+        DELAY_AMOUNT = BOT_DELAY_SECONDS
+    
+    if MODE == "user":
+        tg = useraccount
+        DELAY_AMOUNT = USER_DELAY_SECONDS
+    
+    DELAY_SKIP = SKIP_DELAY_SECONDS
+    
+    NEW = options.new
+    
+    if options.orig is None:  # Menu interface
+        while True:
+            origin_chat = int(input("Enter the origin id_chat:"))
+            ORIGIN_CHAT_TITLE = check_chat_id(origin_chat)
+            if ORIGIN_CHAT_TITLE:
+                break
+    else:  # CLI interface
+        origin_chat = int(options.orig)
+        ORIGIN_CHAT_TITLE = check_chat_id(origin_chat)
+        if ORIGIN_CHAT_TITLE is False:
+            raise AttributeError("Fix the origin chat_id")
+        FILES_TYPE_EXCLUDED = []
+        if NEW is None:
+            NEW = 1
+        else:
+            NEW = int(NEW)
+    
+    if options.dest is None:  # Menu interface
+        while True:
+            destination_chat = int(input("Enter the destination id_chat:"))
+            DESTINATION_CHAT_TITLE = check_chat_id(origin_chat)
+            if DESTINATION_CHAT_TITLE:
+                break
+    else:  # CLI interface
+        destination_chat = int(options.dest)
+        DESTINATION_CHAT_TITLE = check_chat_id(origin_chat)
+        if DESTINATION_CHAT_TITLE is False:
+            raise AttributeError("Fix the destination chat_id")
+    
+    if options.type is None:
+        pass
+    else:
+        TYPE = options.type
+        FILES_TYPE_EXCLUDED = get_files_type_excluded_by_input(TYPE)
+    
+    CACHE_FILE = get_task_file(ORIGIN_CHAT_TITLE, destination_chat)
+
     print(
         f"\n....:: Clonechat - v{version} ::....\n"
         + "github.com/apenasrr/clonechat/\n"
@@ -633,96 +725,6 @@ def main():
     )
 
 
-config_data = get_config_data(
-    path_file_config=os.path.join("user", "config.ini")
-)
 
-USER_DELAY_SECONDS = float(config_data.get("user_delay_seconds"))
-BOT_DELAY_SECONDS = float(config_data.get("bot_delay_seconds"))
-SKIP_DELAY_SECONDS = float(config_data.get("skip_delay_seconds"))
-
-parser = argparse.ArgumentParser()
-parser.add_argument("--orig", help="chat_id of origin channel/group")
-parser.add_argument("--dest", help="chat_id of destination channel/group")
-parser.add_argument(
-    "--mode",
-    choices=["user", "bot"],
-    help='"user" is slow. "bot" requires token_bot in credentials',
-)
-parser.add_argument(
-    "--new", type=int, choices=[1, 2], help="1 = new, 2 = resume"
-)
-help_type = """list separated by comma of message type to be clonned:
-Ex. for documents and videos: 3,8 || Options:
-0 = All files
-1 = Photos
-2 = Text
-3 = Documents (pdf, zip, rar...)
-4 = Stickers
-5 = Animation
-6 = Audio files (music
-7 = Voice message
-8 = Videos
-9 = Polls"""
-parser.add_argument("--type", help=help_type, default="0")
-options = parser.parse_args()
-
-if options.mode is None:
-    MODE = config_data.get("mode")
-else:
-    MODE = options.mode
-
-
-useraccount = ensure_connection("user")
-print(f"{MODE=}")
-if MODE == "bot":
-    bot = ensure_connection("bot")
-    tg = bot
-    DELAY_AMOUNT = BOT_DELAY_SECONDS
-
-if MODE == "user":
-    tg = useraccount
-    DELAY_AMOUNT = USER_DELAY_SECONDS
-
-DELAY_SKIP = SKIP_DELAY_SECONDS
-
-NEW = options.new
-
-if options.orig is None:  # Menu interface
-    while True:
-        origin_chat = int(input("Enter the origin id_chat:"))
-        ORIGIN_CHAT_TITLE = check_chat_id(origin_chat)
-        if ORIGIN_CHAT_TITLE:
-            break
-else:  # CLI interface
-    origin_chat = int(options.orig)
-    ORIGIN_CHAT_TITLE = check_chat_id(origin_chat)
-    if ORIGIN_CHAT_TITLE is False:
-        raise AttributeError("Fix the origin chat_id")
-    FILES_TYPE_EXCLUDED = []
-    if NEW is None:
-        NEW = 1
-    else:
-        NEW = int(NEW)
-
-if options.dest is None:  # Menu interface
-    while True:
-        destination_chat = int(input("Enter the destination id_chat:"))
-        DESTINATION_CHAT_TITLE = check_chat_id(origin_chat)
-        if DESTINATION_CHAT_TITLE:
-            break
-else:  # CLI interface
-    destination_chat = int(options.dest)
-    DESTINATION_CHAT_TITLE = check_chat_id(origin_chat)
-    if DESTINATION_CHAT_TITLE is False:
-        raise AttributeError("Fix the destination chat_id")
-
-if options.type is None:
-    pass
-else:
-    TYPE = options.type
-    FILES_TYPE_EXCLUDED = get_files_type_excluded_by_input(TYPE)
-
-CACHE_FILE = get_task_file(ORIGIN_CHAT_TITLE, destination_chat)
 
 main()
