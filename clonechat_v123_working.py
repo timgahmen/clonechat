@@ -10,22 +10,9 @@ from pathlib import Path
 import pyrogram
 from pyrogram.errors import ChannelInvalid, FloodWait, PeerIdInvalid
 
-import logging
-
-logging.basicConfig(level=logging.DEBUG,
-                    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-logger = logging.getLogger(__name__)
-logging.getLogger("pyrogram").setLevel(logging.WARNING)
-logging.getLogger("telethon").setLevel(logging.WARNING)
-
-
 DELAY_AMOUNT = 10
 
-COPY_MESSAGES = False
-
-# https://github.com/UsenkoKonstantinVL/clonechat
-
-version = 123
+version = 113
 
 def get_config_data(path_file_config):
     """get default configuration data from file config.ini
@@ -478,7 +465,7 @@ def is_empty_message(DELAY_SKIP, DELAY_AMOUNT, message, message_id, last_message
         return False
 
 
-def must_be_ignored(DELAY_SKIP, DELAY_AMOUNT, func_sender, message_id, last_message_id) -> bool:
+def must_be_ignored(func_sender, message_id, last_message_id) -> bool:
 
     if func_sender in FILES_TYPE_EXCLUDED:
         print(f"{message_id}/{last_message_id} (skip by type)")
@@ -517,7 +504,7 @@ def get_task_file(ORIGIN_CHAT_TITLE, origin_chat, destination_chat):
     return task_file_path
 
 
-def check_chat_id(MODE, tg, chat_id):
+def check_chat_id(tg, chat_id):
 
     try:
         chat_obj = tg.get_chat(chat_id)
@@ -587,34 +574,6 @@ def ensure_connection(client_name):
                 print("\nError. Try again.\n")
                 pass
 
-# ------------------------------------------------------------
-# NEW:
-
-def copy_messages(destination_chat, origin_chat, tg, messages):
-    for message in messages:
-        try:
-            tg.copy_message(destination_chat, origin_chat, message.id, caption=f"{message.from_user.username}: {str(message.date)}")
-        except FloodWait as e:
-            print(f"Got flood error, waiting for {e.value} seconds")
-            time.sleep(e.value)  # Wait "value" seconds before continuing
-            tg.copy_message(destination_chat, origin_chat, message.id, caption=f"{message.from_user.username}: {str(message.date)}")
-
-
-def forward_messages(destination_chat, origin_chat, tg, messages_ids):
-    while len(messages_ids) != 0:
-        sending_messages = min(100, len(messages_ids))
-        try:
-            tg.forward_messages(destination_chat, origin_chat, messages_ids[:sending_messages])
-        except FloodWait as e:
-            print(f"Got flood error, waiting for {e.value} seconds")
-            time.sleep(e.value)  # Wait "value" seconds before continuing
-            tg.forward_messages(destination_chat, origin_chat, messages_ids[:sending_messages])
-        messages_ids = messages_ids[sending_messages: ]
-        time.sleep(1.0)
-
-# ------------------------------------------------------------
-
-
 
 def main():
 
@@ -633,9 +592,6 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--orig", help="chat_id of origin channel/group")
     parser.add_argument("--dest", help="chat_id of destination channel/group")
-# new
-    parser.add_argument("--copy", default=False, type=bool, help="If True copies messages from origin to destination. Else forward messages.")
-
     parser.add_argument(
         "--mode",
         choices=["user", "bot"],
@@ -664,9 +620,6 @@ def main():
     else:
         MODE = options.mode
 
-# new    
-    COPY_MESSAGES = options.copy
-
 
     useraccount = ensure_connection("user")
     print(f"{MODE=}")
@@ -686,12 +639,12 @@ def main():
     if options.orig is None:  # Menu interface
         while True:
             origin_chat = int(input("Enter the origin id_chat:"))
-            ORIGIN_CHAT_TITLE = check_chat_id(MODE, tg, chat_id=origin_chat)
+            ORIGIN_CHAT_TITLE = check_chat_id(tg, origin_chat)
             if ORIGIN_CHAT_TITLE:
                 break
     else:  # CLI interface
         origin_chat = int(options.orig)
-        ORIGIN_CHAT_TITLE = check_chat_id(MODE, tg, chat_id=origin_chat)
+        ORIGIN_CHAT_TITLE = check_chat_id(tg, origin_chat)
         if ORIGIN_CHAT_TITLE is False:
             raise AttributeError("Fix the origin chat_id")
         FILES_TYPE_EXCLUDED = []
@@ -703,12 +656,12 @@ def main():
     if options.dest is None:  # Menu interface
         while True:
             destination_chat = int(input("Enter the destination id_chat:"))
-            DESTINATION_CHAT_TITLE = check_chat_id(MODE, tg, chat_id=destination_chat)
+            DESTINATION_CHAT_TITLE = check_chat_id(tg, origin_chat)
             if DESTINATION_CHAT_TITLE:
                 break
     else:  # CLI interface
         destination_chat = int(options.dest)
-        DESTINATION_CHAT_TITLE = check_chat_id(MODE, tg, chat_id=destination_chat)
+        DESTINATION_CHAT_TITLE = check_chat_id(tg, origin_chat)
         if DESTINATION_CHAT_TITLE is False:
             raise AttributeError("Fix the destination chat_id")
 
@@ -727,7 +680,7 @@ def main():
         + "github.com/apenasrr/clonechat/\n"
     )
 
-       #global FILES_TYPE_EXCLUDED
+    #global FILES_TYPE_EXCLUDED
     FILES_TYPE_EXCLUDED = get_files_type_excluded()
     last_message_id = get_last_message_id(useraccount, origin_chat)
 
@@ -749,29 +702,16 @@ def main():
         if is_empty_message(DELAY_SKIP, DELAY_AMOUNT, message, message_id, last_message_id):
             list_posted += [message.id]
             continue
-        
-        
+
         func_sender = get_sender(message)
 
-        print("func_sender:{func_sender}")
-
-        if must_be_ignored(DELAY_SKIP, DELAY_AMOUNT, func_sender, message_id, last_message_id):
+        if must_be_ignored(func_sender, message_id, last_message_id):
             list_posted += [message.id]
             update_cache(CACHE_FILE, list_posted)
             continue
 
         func_sender(tg, message, destination_chat)
         print(f"{message_id}/{last_message_id}")
-
- #   if COPY_MESSAGES:
- #       messages_id = [message.id for message in new_messages]
- #       print("Forwarding messages")
- #       #forward_messages(messages_id)
- #       forward_messages(destination_chat, origin_chat, tg, messages_ids=messages_id)
- #   else:
- #       #copy_messages(new_messages)
- #       copy_messages(destination_chat, origin_chat, tg, messages=new_messages)
-
 
         list_posted += [message.id]
         update_cache(CACHE_FILE, list_posted)

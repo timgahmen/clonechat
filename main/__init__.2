@@ -1,0 +1,94 @@
+import pyrogram
+from pyrogram import Client
+
+from telethon.sessions import StringSession
+from telethon.sync import TelegramClient
+
+from decouple import config
+import logging, time, sys
+
+from pathlib import Path
+
+logging.basicConfig(format='[%(levelname) 5s/%(asctime)s] %(name)s: %(message)s',
+                    level=logging.WARNING)
+
+# variables
+#API_ID = config("API_ID", default=None, cast=int)
+#API_HASH = config("API_HASH", default=None)
+#BOT_TOKEN = config("BOT_TOKEN", default=None)
+#SESSION = config("SESSION", default=None)
+#AUTH = [int(id) for id in config("AUTH", default="").split(",") if id.strip()]
+
+#bot = TelegramClient(
+#    'bot',
+#    API_ID,
+#    API_HASH
+#    ).start(
+#        bot_token=BOT_TOKEN
+#        ) 
+
+
+api_id = 23736556
+api_hash = "6f2e8cbda3cf92010af144f931f23e44"
+bot_token = "6572169169:AAGx3FT74_HU023JkUpX0sM44EJVwQ0ALHQ"
+
+def start_userbot(api_id, api_hash):
+
+    if Path(f"user.session").exists():
+        try:
+            useraccount = pyrogram.Client("user")
+            useraccount.start()
+            return
+        except:
+            print("Delete Session file and try again.")
+
+    while True:
+        try:
+            print("UserBot:")
+            #api_id = int(input("Enter your api_id: "))
+            #api_hash = input("Enter your api_hash: ")
+            
+            useraccount = pyrogram.Client(
+                "user",
+                api_id,
+                api_hash
+                )
+            useraccount.start()
+            return
+        except:
+            print("\nError. Try again.\n")
+            pass
+
+
+def start_bot(api_id, api_hash, bot_token):
+    if Path(f"Bot.session").exists():
+        try:
+            bot = pyrogram.Client("Bot")
+            bot.start()
+            return
+
+        except:
+            print("Delete Session file and try again.")
+    while True:
+        try:
+            print("Bot:")
+
+            #api_id = int(input("Enter your api_id: "))
+            #api_hash = input("Enter your api_hash: ")
+            #bot_token = input("Enter your bot_token: ")
+            
+            bot = Client(
+                "Bot",
+                api_id,
+                api_hash,
+                bot_token=bot_token
+                )
+            bot.start()
+            return
+
+        except:
+            print("\nError. Try again.\n")
+            pass
+
+start_userbot(api_id, api_hash)
+start_bot(api_id, api_hash, bot_token)

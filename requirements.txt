@@ -1,2 +1,5 @@
-pyrogram
+Telethon
+cryptg
 tgcrypto
+pyrogram
+python-decouple

@@ -10,22 +10,10 @@ from pathlib import Path
 import pyrogram
 from pyrogram.errors import ChannelInvalid, FloodWait, PeerIdInvalid
 
-import logging
-
-logging.basicConfig(level=logging.DEBUG,
-                    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-logger = logging.getLogger(__name__)
-logging.getLogger("pyrogram").setLevel(logging.WARNING)
-logging.getLogger("telethon").setLevel(logging.WARNING)
-
+version = 120
 
 DELAY_AMOUNT = 10
 
-COPY_MESSAGES = False
-
-# https://github.com/UsenkoKonstantinVL/clonechat
-
-version = 123
 
 def get_config_data(path_file_config):
     """get default configuration data from file config.ini
@@ -40,7 +28,7 @@ def get_config_data(path_file_config):
     return default_config
 
 
-def foward_photo(tg, message, destination_chat):
+def foward_photo(message, destination_chat):
 
     caption = get_caption(message)
     photo_id = message.photo.file_id
@@ -61,15 +49,14 @@ def foward_photo(tg, message, destination_chat):
         tg.send_photo(
             chat_id=destination_chat,
             photo=photo_id,
-            caption=None,
+            caption="",
         )
-        
         return
 
     foward_photo(message, destination_chat)
 
 
-def foward_text(tg, message, destination_chat):
+def foward_text(message, destination_chat):
 
     text = message.text.markdown
     try:
@@ -90,7 +77,7 @@ def foward_text(tg, message, destination_chat):
     foward_text(message, destination_chat)
 
 
-def foward_sticker(tg, message, destination_chat):
+def foward_sticker(message, destination_chat):
 
     sticker_id = message.sticker.file_id
     try:
@@ -106,7 +93,7 @@ def foward_sticker(tg, message, destination_chat):
     foward_sticker(message, destination_chat)
 
 
-def foward_document(tg, message, destination_chat):
+def foward_document(message, destination_chat):
 
     caption = get_caption(message)
     document_id = message.document.file_id
@@ -129,15 +116,15 @@ def foward_document(tg, message, destination_chat):
             chat_id=destination_chat,
             document=document_id,
             disable_notification=True,
-            caption=None,
+            caption="",
         )
-        
         return
 
+    
     foward_document(message, destination_chat)
 
 
-def foward_animation(tg, message, destination_chat):
+def foward_animation(message, destination_chat):
 
     caption = get_caption(message)
     animation_id = message.animation.file_id
@@ -155,19 +142,18 @@ def foward_animation(tg, message, destination_chat):
     except Exception as e:
         print(f"trying again... Due to: {e}")
         time.sleep(10)
-        
+
         tg.send_animation(
             chat_id=destination_chat,
             animation=animation_id,
             disable_notification=True,
-            caption=None,
+            caption="",
         )
-        return
 
     foward_animation(message, destination_chat)
 
 
-def foward_audio(tg, message, destination_chat):
+def foward_audio(message, destination_chat):
 
     caption = get_caption(message)
     audio_id = message.audio.file_id
@@ -185,19 +171,18 @@ def foward_audio(tg, message, destination_chat):
     except Exception as e:
         print(f"trying again... Due to: {e}")
         time.sleep(10)
-        
+
         tg.send_audio(
             chat_id=destination_chat,
             audio=audio_id,
             disable_notification=True,
-            caption=None,
+            caption="",
         )
-        return
 
     foward_audio(message, destination_chat)
 
 
-def foward_voice(tg, message, destination_chat):
+def foward_voice(message, destination_chat):
 
     caption = get_caption(message)
     voice_id = message.voice.file_id
@@ -215,19 +200,18 @@ def foward_voice(tg, message, destination_chat):
     except Exception as e:
         print(f"trying again... Due to: {e}")
         time.sleep(10)
-        
+
         tg.send_voice(
             chat_id=destination_chat,
             voice=voice_id,
             disable_notification=True,
-            caption=None,
+            caption="",
         )
-        return
 
     foward_voice(message, destination_chat)
 
 
-def foward_video_note(tg, message, destination_chat):
+def foward_video_note(message, destination_chat):
 
     video_note_id = message.video_note.file_id
     try:
@@ -247,7 +231,7 @@ def foward_video_note(tg, message, destination_chat):
     foward_video_note(message, destination_chat)
 
 
-def foward_video(tg, message, destination_chat):
+def foward_video(message, destination_chat):
 
     caption = get_caption(message)
     video_id = message.video.file_id
@@ -270,14 +254,14 @@ def foward_video(tg, message, destination_chat):
             chat_id=destination_chat,
             video=video_id,
             disable_notification=True,
-            caption=None,
+            caption="",
         )
         return
 
     foward_video(message, destination_chat)
 
 
-def foward_poll(tg, message, destination_chat):
+def foward_poll(message, destination_chat):
 
     if message.poll.type != "regular":
         return
@@ -299,6 +283,15 @@ def foward_poll(tg, message, destination_chat):
         time.sleep(10)
 
     foward_poll(message, destination_chat)
+
+
+def get_caption(message):
+
+    if message.caption:
+        caption = message.caption.markdown
+    else:
+        caption = None
+    return caption
 
 
 def get_caption(message):
@@ -389,7 +382,7 @@ def get_files_type_excluded_by_input(input_string):
     return files_type_excluded
 
 
-def get_message(tg, origin_chat, message_id):
+def get_message(origin_chat, message_id):
 
     try:
         message = tg.get_messages(origin_chat, message_id)
@@ -417,7 +410,7 @@ def task_type():
         return task_type()
 
 
-def get_list_posted(CACHE_FILE, int_task_type):
+def get_list_posted(int_task_type):
 
     # 1 = new
     if int_task_type == 1:
@@ -433,7 +426,7 @@ def get_list_posted(CACHE_FILE, int_task_type):
             return []
 
 
-def wait_a_moment(DELAY_SKIP, DELAY_AMOUNT, message_id, skip=False):
+def wait_a_moment(message_id, skip=False):
 
     if message_id != 1:
         if skip:
@@ -448,7 +441,7 @@ def update_cache(CACHE_FILE, list_posted):
         file.write(json.dumps(list_posted))
 
 
-def get_last_message_id(useraccount, origin_chat):
+def get_last_message_id(origin_chat):
 
     iter_message = useraccount.get_chat_history(origin_chat)
     message = next(iter_message)
@@ -468,21 +461,21 @@ def get_files_type_excluded():
         return FILES_TYPE_EXCLUDED
 
 
-def is_empty_message(DELAY_SKIP, DELAY_AMOUNT, message, message_id, last_message_id) -> bool:
+def is_empty_message(message, message_id, last_message_id) -> bool:
 
     if message.empty or message.service or message.dice or message.location:
         print(f"{message_id}/{last_message_id} (blank id)")
-        wait_a_moment(DELAY_SKIP, DELAY_AMOUNT, message_id, skip=True)
+        wait_a_moment(message_id, skip=True)
         return True
     else:
         return False
 
 
-def must_be_ignored(DELAY_SKIP, DELAY_AMOUNT, func_sender, message_id, last_message_id) -> bool:
+def must_be_ignored(func_sender, message_id, last_message_id) -> bool:
 
     if func_sender in FILES_TYPE_EXCLUDED:
         print(f"{message_id}/{last_message_id} (skip by type)")
-        wait_a_moment(DELAY_SKIP, DELAY_AMOUNT, message_id, skip=True)
+        wait_a_moment(message_id, skip=True)
         return True
     else:
         return False
@@ -508,16 +501,16 @@ def ensure_folder_existence(folder_path):
         os.mkdir(folder_path)
 
 
-def get_task_file(ORIGIN_CHAT_TITLE, origin_chat, destination_chat):
+def get_task_file(ORIGIN_CHAT_TITLE, destination_chat):
 
     ensure_folder_existence("user")
     ensure_folder_existence(os.path.join("user", "tasks"))
-    task_file_name = f"{ORIGIN_CHAT_TITLE}_{origin_chat}_{destination_chat}.json"
+    task_file_name = f"{ORIGIN_CHAT_TITLE}-{destination_chat}.json"
     task_file_path = os.path.join("user", "tasks", task_file_name)
     return task_file_path
 
 
-def check_chat_id(MODE, tg, chat_id):
+def check_chat_id(chat_id):
 
     try:
         chat_obj = tg.get_chat(chat_id)
@@ -587,55 +580,20 @@ def ensure_connection(client_name):
                 print("\nError. Try again.\n")
                 pass
 
-# ------------------------------------------------------------
-# NEW:
-
-def copy_messages(destination_chat, origin_chat, tg, messages):
-    for message in messages:
-        try:
-            tg.copy_message(destination_chat, origin_chat, message.id, caption=f"{message.from_user.username}: {str(message.date)}")
-        except FloodWait as e:
-            print(f"Got flood error, waiting for {e.value} seconds")
-            time.sleep(e.value)  # Wait "value" seconds before continuing
-            tg.copy_message(destination_chat, origin_chat, message.id, caption=f"{message.from_user.username}: {str(message.date)}")
-
-
-def forward_messages(destination_chat, origin_chat, tg, messages_ids):
-    while len(messages_ids) != 0:
-        sending_messages = min(100, len(messages_ids))
-        try:
-            tg.forward_messages(destination_chat, origin_chat, messages_ids[:sending_messages])
-        except FloodWait as e:
-            print(f"Got flood error, waiting for {e.value} seconds")
-            time.sleep(e.value)  # Wait "value" seconds before continuing
-            tg.forward_messages(destination_chat, origin_chat, messages_ids[:sending_messages])
-        messages_ids = messages_ids[sending_messages: ]
-        time.sleep(1.0)
-
-# ------------------------------------------------------------
-
-
 
 def main():
 
     config_data = get_config_data(
-        path_file_config=os.path.join("user", "config.ini")
+    path_file_config=os.path.join("user", "config.ini")
     )
 
-#    USER_DELAY_SECONDS = float(config_data.get("user_delay_seconds"))
-#    BOT_DELAY_SECONDS = float(config_data.get("bot_delay_seconds"))
-#    SKIP_DELAY_SECONDS = float(config_data.get("skip_delay_seconds"))
-
-    USER_DELAY_SECONDS = 10
-    BOT_DELAY_SECONDS = 2
-    SKIP_DELAY_SECONDS = 1
+    USER_DELAY_SECONDS = float(config_data.get("user_delay_seconds"))
+    BOT_DELAY_SECONDS = float(config_data.get("bot_delay_seconds"))
+    SKIP_DELAY_SECONDS = float(config_data.get("skip_delay_seconds"))
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--orig", help="chat_id of origin channel/group")
     parser.add_argument("--dest", help="chat_id of destination channel/group")
-# new
-    parser.add_argument("--copy", default=False, type=bool, help="If True copies messages from origin to destination. Else forward messages.")
-
     parser.add_argument(
         "--mode",
         choices=["user", "bot"],
@@ -656,16 +614,13 @@ def main():
     7 = Voice message
     8 = Videos
     9 = Polls"""
-    parser.add_argument("--type", help=help_type)
+    parser.add_argument("--type", help=help_type, default="0")
     options = parser.parse_args()
 
     if options.mode is None:
         MODE = config_data.get("mode")
     else:
         MODE = options.mode
-
-# new    
-    COPY_MESSAGES = options.copy
 
 
     useraccount = ensure_connection("user")
@@ -686,12 +641,12 @@ def main():
     if options.orig is None:  # Menu interface
         while True:
             origin_chat = int(input("Enter the origin id_chat:"))
-            ORIGIN_CHAT_TITLE = check_chat_id(MODE, tg, chat_id=origin_chat)
+            ORIGIN_CHAT_TITLE = check_chat_id(origin_chat)
             if ORIGIN_CHAT_TITLE:
                 break
     else:  # CLI interface
         origin_chat = int(options.orig)
-        ORIGIN_CHAT_TITLE = check_chat_id(MODE, tg, chat_id=origin_chat)
+        ORIGIN_CHAT_TITLE = check_chat_id(origin_chat)
         if ORIGIN_CHAT_TITLE is False:
             raise AttributeError("Fix the origin chat_id")
         FILES_TYPE_EXCLUDED = []
@@ -703,12 +658,12 @@ def main():
     if options.dest is None:  # Menu interface
         while True:
             destination_chat = int(input("Enter the destination id_chat:"))
-            DESTINATION_CHAT_TITLE = check_chat_id(MODE, tg, chat_id=destination_chat)
+            DESTINATION_CHAT_TITLE = check_chat_id(origin_chat)
             if DESTINATION_CHAT_TITLE:
                 break
     else:  # CLI interface
         destination_chat = int(options.dest)
-        DESTINATION_CHAT_TITLE = check_chat_id(MODE, tg, chat_id=destination_chat)
+        DESTINATION_CHAT_TITLE = check_chat_id(origin_chat)
         if DESTINATION_CHAT_TITLE is False:
             raise AttributeError("Fix the destination chat_id")
 
@@ -718,25 +673,23 @@ def main():
         TYPE = options.type
         FILES_TYPE_EXCLUDED = get_files_type_excluded_by_input(TYPE)
 
-    CACHE_FILE = get_task_file(ORIGIN_CHAT_TITLE, origin_chat, destination_chat)
-
-
+    CACHE_FILE = get_task_file(ORIGIN_CHAT_TITLE, destination_chat)
 
     print(
         f"\n....:: Clonechat - v{version} ::....\n"
         + "github.com/apenasrr/clonechat/\n"
     )
 
-       #global FILES_TYPE_EXCLUDED
+    #global FILES_TYPE_EXCLUDED
     FILES_TYPE_EXCLUDED = get_files_type_excluded()
-    last_message_id = get_last_message_id(useraccount, origin_chat)
+    last_message_id = get_last_message_id(origin_chat)
 
     #global NEW
     if NEW is None:
         int_task_type = task_type()
     else:
         int_task_type = NEW
-    list_posted = get_list_posted(CACHE_FILE, int_task_type)
+    list_posted = get_list_posted(int_task_type)
 
     message_id = get_first_message_id(list_posted)
     while message_id < last_message_id:
@@ -744,39 +697,26 @@ def main():
         if message_id in list_posted:
             continue
 
-        message = get_message(tg, origin_chat, message_id)
+        message = get_message(origin_chat, message_id)
 
-        if is_empty_message(DELAY_SKIP, DELAY_AMOUNT, message, message_id, last_message_id):
+        if is_empty_message(message, message_id, last_message_id):
             list_posted += [message.id]
             continue
-        
-        
+
         func_sender = get_sender(message)
 
-        print("func_sender:{func_sender}")
-
-        if must_be_ignored(DELAY_SKIP, DELAY_AMOUNT, func_sender, message_id, last_message_id):
+        if must_be_ignored(func_sender, message_id, last_message_id):
             list_posted += [message.id]
             update_cache(CACHE_FILE, list_posted)
             continue
 
-        func_sender(tg, message, destination_chat)
+        func_sender(message, destination_chat)
         print(f"{message_id}/{last_message_id}")
-
- #   if COPY_MESSAGES:
- #       messages_id = [message.id for message in new_messages]
- #       print("Forwarding messages")
- #       #forward_messages(messages_id)
- #       forward_messages(destination_chat, origin_chat, tg, messages_ids=messages_id)
- #   else:
- #       #copy_messages(new_messages)
- #       copy_messages(destination_chat, origin_chat, tg, messages=new_messages)
-
 
         list_posted += [message.id]
         update_cache(CACHE_FILE, list_posted)
 
-        wait_a_moment(DELAY_SKIP, DELAY_AMOUNT, message_id)
+        wait_a_moment(message_id)
 
     print(
         "\nChat cloning finished! :)\n"
@@ -784,5 +724,5 @@ def main():
         + "delete the posted.json file"
     )
 
-
+    
 main()

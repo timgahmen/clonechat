@@ -3,16 +3,24 @@ from __future__ import annotations
 import asyncio
 from pathlib import Path
 
-from setup import version
-
 from . import clonechat_protect, cloneplan
 from .pipe import download
+
+import logging
+
+logging.basicConfig(level=logging.DEBUG,
+                    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
+logging.getLogger("pyrogram").setLevel(logging.WARNING)
+logging.getLogger("telethon").setLevel(logging.WARNING)
+
+version = 111
 
 
 async def main():
 
     print(
-        f"\n....:: Clonechat - v{version} ::....\n"
+        f"\n....:: Clonechat Downloadall - v{version} ::....\n"
         + "github.com/apenasrr/clonechat/\n"
         + "---------DownloadAll----------"
     )

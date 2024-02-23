@@ -11,7 +11,15 @@ from typing import Union
 import pyrogram
 from pyrogram.errors import ChannelInvalid, PeerIdInvalid
 
-from setup import version
+import logging
+
+logging.basicConfig(level=logging.DEBUG,
+                    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
+logging.getLogger("pyrogram").setLevel(logging.WARNING)
+logging.getLogger("telethon").setLevel(logging.WARNING)
+
+version = 111
 
 from . import cloneplan
 from .pipe import download, upload
@@ -168,7 +176,7 @@ def get_history_path(chat_title: str, chat_id: int) -> Path:
 
 async def save_history(
     client: pyrogram.Client, chat_id: int, history_path: Path
-):
+    ):
 
     # save history json
     list_dict_msgs = []
@@ -196,7 +204,7 @@ async def pipe_clone(
     download_folder: Path,
     max_size_mb: int,
     auto_restart: int,
-):
+    ):
 
     loop = asyncio.get_event_loop()
     list_tasks = list()
@@ -337,7 +345,7 @@ def show_history_overview(history_path: Path) -> list[str]:
 async def main():
 
     print(
-        f"\n....:: Clonechat - v{version} ::....\n"
+        f"\n....:: Clonechat Protect Run -  v{version} ::....\n"
         + "github.com/apenasrr/clonechat/\n"
         + "-----------Protect------------"
     )

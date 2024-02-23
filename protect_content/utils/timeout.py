@@ -3,6 +3,14 @@ from __future__ import annotations
 import asyncio
 import multiprocessing
 
+import logging
+
+logging.basicConfig(level=logging.DEBUG,
+                    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
+logging.getLogger("pyrogram").setLevel(logging.WARNING)
+logging.getLogger("telethon").setLevel(logging.WARNING)
+
 
 def func_subprocess(func_, dict_params: dict, pipe):
 
