@@ -27,7 +27,7 @@ def get_config_data(path_file_config):
     return default_config
 
 
-def foward_photo(message, destination_chat):
+def foward_photo(tg, message, destination_chat):
 
     caption = get_caption(message)
     photo_id = message.photo.file_id
@@ -54,7 +54,7 @@ def foward_photo(message, destination_chat):
     foward_photo(message, destination_chat)
 
 
-def foward_text(message, destination_chat):
+def foward_text(tg, message, destination_chat):
 
     text = message.text.markdown
     try:
@@ -75,7 +75,7 @@ def foward_text(message, destination_chat):
     foward_text(message, destination_chat)
 
 
-def foward_sticker(message, destination_chat):
+def foward_sticker(tg, message, destination_chat):
 
     sticker_id = message.sticker.file_id
     try:
@@ -91,7 +91,7 @@ def foward_sticker(message, destination_chat):
     foward_sticker(message, destination_chat)
 
 
-def foward_document(message, destination_chat):
+def foward_document(tg, message, destination_chat):
 
     caption = get_caption(message)
     document_id = message.document.file_id
@@ -120,7 +120,7 @@ def foward_document(message, destination_chat):
     foward_document(message, destination_chat)
 
 
-def foward_animation(message, destination_chat):
+def foward_animation(tg, message, destination_chat):
 
     caption = get_caption(message)
     animation_id = message.animation.file_id
@@ -148,7 +148,7 @@ def foward_animation(message, destination_chat):
     foward_animation(message, destination_chat)
 
 
-def foward_audio(message, destination_chat):
+def foward_audio(tg, message, destination_chat):
 
     caption = get_caption(message)
     audio_id = message.audio.file_id
@@ -176,7 +176,7 @@ def foward_audio(message, destination_chat):
     foward_audio(message, destination_chat)
 
 
-def foward_voice(message, destination_chat):
+def foward_voice(tg, message, destination_chat):
 
     caption = get_caption(message)
     voice_id = message.voice.file_id
@@ -204,7 +204,7 @@ def foward_voice(message, destination_chat):
     foward_voice(message, destination_chat)
 
 
-def foward_video_note(message, destination_chat):
+def foward_video_note(tg, message, destination_chat):
 
     video_note_id = message.video_note.file_id
     try:
@@ -224,7 +224,7 @@ def foward_video_note(message, destination_chat):
     foward_video_note(message, destination_chat)
 
 
-def foward_video(message, destination_chat):
+def foward_video(tg, message, destination_chat):
 
     caption = get_caption(message)
     video_id = message.video.file_id
@@ -252,7 +252,7 @@ def foward_video(message, destination_chat):
     foward_video(message, destination_chat)
 
 
-def foward_poll(message, destination_chat):
+def foward_poll(tg, message, destination_chat):
 
     if message.poll.type != "regular":
         return
@@ -370,7 +370,7 @@ def get_files_type_excluded_by_input(input_string):
     return files_type_excluded
 
 
-def get_message(origin_chat, message_id):
+def get_message(tg, origin_chat, message_id):
 
     try:
         message = tg.get_messages(origin_chat, message_id)
@@ -398,7 +398,7 @@ def task_type():
         return task_type()
 
 
-def get_list_posted(int_task_type):
+def get_list_posted(CACHE_FILE, int_task_type):
 
     # 1 = new
     if int_task_type == 1:
@@ -414,7 +414,7 @@ def get_list_posted(int_task_type):
             return []
 
 
-def wait_a_moment(message_id, skip=False):
+def wait_a_moment(DELAY_SKIP, DELAY_AMOUNT, message_id, skip=False):
 
     if message_id != 1:
         if skip:
@@ -429,7 +429,7 @@ def update_cache(CACHE_FILE, list_posted):
         file.write(json.dumps(list_posted))
 
 
-def get_last_message_id(origin_chat):
+def get_last_message_id(useraccount, origin_chat):
 
     iter_message = useraccount.get_chat_history(origin_chat)
     message = next(iter_message)
@@ -449,11 +449,11 @@ def get_files_type_excluded():
         return FILES_TYPE_EXCLUDED
 
 
-def is_empty_message(message, message_id, last_message_id) -> bool:
+def is_empty_message(DELAY_SKIP, DELAY_AMOUNT, message, message_id, last_message_id) -> bool:
 
     if message.empty or message.service or message.dice or message.location:
         print(f"{message_id}/{last_message_id} (blank id)")
-        wait_a_moment(message_id, skip=True)
+        wait_a_moment(DELAY_SKIP, DELAY_AMOUNT, message_id, skip=True)
         return True
     else:
         return False
@@ -498,7 +498,7 @@ def get_task_file(ORIGIN_CHAT_TITLE, origin_chat, destination_chat):
     return task_file_path
 
 
-def check_chat_id(chat_id):
+def check_chat_id(MODE, tg, chat_id):
 
     try:
         chat_obj = tg.get_chat(chat_id)
@@ -609,7 +609,11 @@ def main():
         MODE = config_data.get("mode")
     else:
         MODE = options.mode
+
+    global FILES_TYPE_EXCLUDED
+    FILES_TYPE_EXCLUDED = get_files_type_excluded()
     
+    global NEW
     
     useraccount = ensure_connection("user")
     print(f"{MODE=}")
@@ -629,12 +633,12 @@ def main():
     if options.orig is None:  # Menu interface
         while True:
             origin_chat = int(input("Enter the origin id_chat:"))
-            ORIGIN_CHAT_TITLE = check_chat_id(origin_chat)
+            ORIGIN_CHAT_TITLE = check_chat_id(MODE, tg, origin_chat)
             if ORIGIN_CHAT_TITLE:
                 break
     else:  # CLI interface
         origin_chat = int(options.orig)
-        ORIGIN_CHAT_TITLE = check_chat_id(origin_chat)
+        ORIGIN_CHAT_TITLE = check_chat_id(MODE, tg, origin_chat)
         if ORIGIN_CHAT_TITLE is False:
             raise AttributeError("Fix the origin chat_id")
         FILES_TYPE_EXCLUDED = []
@@ -646,15 +650,15 @@ def main():
     if options.dest is None:  # Menu interface
         while True:
             destination_chat = int(input("Enter the destination id_chat:"))
-            DESTINATION_CHAT_TITLE = check_chat_id(origin_chat)
+            DESTINATION_CHAT_TITLE = check_chat_id(MODE, tg, origin_chat)
             if DESTINATION_CHAT_TITLE:
                 break
     else:  # CLI interface
         destination_chat = int(options.dest)
-        DESTINATION_CHAT_TITLE = check_chat_id(origin_chat)
+        DESTINATION_CHAT_TITLE = check_chat_id(MODE, tg, origin_chat)
         if DESTINATION_CHAT_TITLE is False:
             raise AttributeError("Fix the destination chat_id")
-    
+
     if options.type is None:
         pass
     else:
@@ -673,16 +677,15 @@ def main():
     print(f"Destination ID: {destination_chat}\n")
     print("--------------------------------------")
 
-    global FILES_TYPE_EXCLUDED
-    FILES_TYPE_EXCLUDED = get_files_type_excluded()
-    last_message_id = get_last_message_id(origin_chat)
+    
+    last_message_id = get_last_message_id(useraccount, origin_chat)
 
-    global NEW
+    
     if NEW is None:
         int_task_type = task_type()
     else:
         int_task_type = NEW
-    list_posted = get_list_posted(int_task_type)
+    list_posted = get_list_posted(CACHE_FILE, int_task_type)
 
     message_id = get_first_message_id(list_posted)
     while message_id < last_message_id:
@@ -690,9 +693,9 @@ def main():
         if message_id in list_posted:
             continue
 
-        message = get_message(origin_chat, message_id)
+        message = get_message(tg, origin_chat, message_id)
 
-        if is_empty_message(message, message_id, last_message_id):
+        if is_empty_message(DELAY_SKIP, DELAY_AMOUNT, message, message_id, last_message_id):
             list_posted += [message.id]
             continue
 
@@ -703,13 +706,13 @@ def main():
             update_cache(CACHE_FILE, list_posted)
             continue
 
-        func_sender(message, destination_chat)
+        func_sender(tg, message, destination_chat)
         print(f"{message_id}/{last_message_id}")
 
         list_posted += [message.id]
         update_cache(CACHE_FILE, list_posted)
 
-        wait_a_moment(message_id)
+        wait_a_moment(DELAY_SKIP, DELAY_AMOUNT, message_id)
 
     print(
         "\nChat cloning finished! :)\n"
