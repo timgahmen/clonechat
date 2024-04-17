@@ -14,17 +14,63 @@ Secure backup. Saves and protects the posts in the destination chat from possibl
 
 ### via command line
 
-Command: python clonechat.py --orig={chat_id of source channel/group} --dest=-{chat_id of destination channel/group}
+Command: 
+python3 clonechat.py --orig={chat_id of source channel/group} --dest=-{chat_id of destination channel/group}
 
-Example: python clonechat.py --orig=-100222222 --dest=-10011111111
+Example: 
+python3 clonechat.py --orig=-100222222 --dest=-10011111111
+
+If you want to clone via bot:
+
+Example: 
+python3 clonechat.py --orig=-100222222 --dest=-10011111111 --mode=bot
+
+If you want to continue a cloning task instead of starting. Useful for updating a cloned channel or resuming a previously interrupted cloning task:
+
+Enter whether you want to start a new clone or continue a cloning you started previously
+
+    Type 1 for new cloned
+    or 2 to continue
+
+Example: python3 clonechat.py --orig=-100222222 --dest=-10011111111 --new=2
 
 ### Via menu in terminal
 
-- Run the `exec_clonechat.bat` file
-- Enter the chat_id of the originating channel/group
-- Confirm with [ENTER]
-- Enter the chat_id of the target channel/group
-- Confirm with [ENTER]
+You need to have the api_id and api_hash of your account before you can run clonechat.
+
+    python3 clonechat.py
+
+    Enter the chat_id of the source channel/group. If the ctrl+v doesn't work, right-click on the terminal
+
+    Confirm with [ENTER]
+
+    Enter the chat_id of the target channel/group
+
+    Confirm with [ENTER]
+
+    From the menu of choosing file types
+        Enter a file filter option
+        If you want to clone all files, type zero
+        You can select multiple options by separating them with commas. 1,3 to clone only photos and documents.
+
+    Enter whether you want to start a new clone or continue a cloning you started previously
+        Type 1 for new cloned
+        or 2 to continue
+
+    Confirm with [ENTER]
+
+    The first time you use it, you'll need to authenticate a connection to Telegram. But it will only be the first time! And then never again. :) Authenticating is simple, follow the steps:
+
+        "Enter phone number or bot token:"
+
+        This message will appear asking for your phone number in international format.
+        Enter your phone number with prefix +55 for the case of a Brazilian telephone number, followed by the local area code and its telephone number.
+            Example: For a telephone in São Paulo, with area code 11, something like the following should be entered: +5511995429405
+        In the message asking if the number is correct, type y.
+        A code will be sent to your telegram, which you must enter in the terminal.
+        Finally, if you have '2-factor security' (2fa) enabled on your account, you will be asked for your password.
+        By running the exec_clonechat.bat, you will be asked for your api_id and api_hash. You only need to inform them once, as the other connections will be made by a session file that will be created in the clonechat folder.
+
 
 ### Finalization
 
