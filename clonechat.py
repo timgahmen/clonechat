@@ -12,7 +12,7 @@ from pyrogram.errors import ChannelInvalid, FloodWait, PeerIdInvalid
 
 DELAY_AMOUNT = 10
 
-version = 121
+version = 122
 
 def get_config_data(path_file_config):
     """get default configuration data from file config.ini
