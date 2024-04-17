@@ -571,62 +571,7 @@ def ensure_connection(client_name):
 
 def main():
 
-    print(
-        f"\n....:: Clonechat - v{version} ::....\n"
-    )
-
-    print("--------------------------------------")
-    print(f"\nChannel: {ORIGIN_CHAT_TITLE}")
-    print(f"Source ID: {origin_chat}")
-    print(f"Destination ID: {destination_chat}\n")
-    print("--------------------------------------")
-
-    global FILES_TYPE_EXCLUDED
-    FILES_TYPE_EXCLUDED = get_files_type_excluded()
-    last_message_id = get_last_message_id(origin_chat)
-
-    global NEW
-    if NEW is None:
-        int_task_type = task_type()
-    else:
-        int_task_type = NEW
-    list_posted = get_list_posted(int_task_type)
-
-    message_id = get_first_message_id(list_posted)
-    while message_id < last_message_id:
-        message_id = message_id + 1
-        if message_id in list_posted:
-            continue
-
-        message = get_message(origin_chat, message_id)
-
-        if is_empty_message(message, message_id, last_message_id):
-            list_posted += [message.id]
-            continue
-
-        func_sender = get_sender(message)
-
-        if must_be_ignored(func_sender, message_id, last_message_id):
-            list_posted += [message.id]
-            update_cache(CACHE_FILE, list_posted)
-            continue
-
-        func_sender(message, destination_chat)
-        print(f"{message_id}/{last_message_id}")
-
-        list_posted += [message.id]
-        update_cache(CACHE_FILE, list_posted)
-
-        wait_a_moment(message_id)
-
-    print(
-        "\nChat cloning finished! :)\n"
-        + "If you are not going to continue this task for these chats, "
-        + "delete the posted.json file"
-    )
-
-
-config_data = get_config_data(
+    config_data = get_config_data(
     path_file_config=os.path.join("user", "config.ini")
 )
 
@@ -717,5 +662,59 @@ else:
     FILES_TYPE_EXCLUDED = get_files_type_excluded_by_input(TYPE)
 
 CACHE_FILE = get_task_file(ORIGIN_CHAT_TITLE, origin_chat, destination_chat)
+
+    print(
+        f"\n....:: Clonechat - v{version} ::....\n"
+    )
+
+    print("--------------------------------------")
+    print(f"\nChannel: {ORIGIN_CHAT_TITLE}")
+    print(f"Source ID: {origin_chat}")
+    print(f"Destination ID: {destination_chat}\n")
+    print("--------------------------------------")
+
+    global FILES_TYPE_EXCLUDED
+    FILES_TYPE_EXCLUDED = get_files_type_excluded()
+    last_message_id = get_last_message_id(origin_chat)
+
+    global NEW
+    if NEW is None:
+        int_task_type = task_type()
+    else:
+        int_task_type = NEW
+    list_posted = get_list_posted(int_task_type)
+
+    message_id = get_first_message_id(list_posted)
+    while message_id < last_message_id:
+        message_id = message_id + 1
+        if message_id in list_posted:
+            continue
+
+        message = get_message(origin_chat, message_id)
+
+        if is_empty_message(message, message_id, last_message_id):
+            list_posted += [message.id]
+            continue
+
+        func_sender = get_sender(message)
+
+        if must_be_ignored(func_sender, message_id, last_message_id):
+            list_posted += [message.id]
+            update_cache(CACHE_FILE, list_posted)
+            continue
+
+        func_sender(message, destination_chat)
+        print(f"{message_id}/{last_message_id}")
+
+        list_posted += [message.id]
+        update_cache(CACHE_FILE, list_posted)
+
+        wait_a_moment(message_id)
+
+    print(
+        "\nChat cloning finished! :)\n"
+        + "If you are not going to continue this task for these chats, "
+        + "delete the posted.json file"
+    )
 
 main()
