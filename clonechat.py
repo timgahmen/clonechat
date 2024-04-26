@@ -292,6 +292,8 @@ def get_caption(message):
 
 def get_sender(message):
 
+    if message.dice or message.location:
+        return None
     if message.photo:
         return foward_photo
     if message.text:
