@@ -12,7 +12,7 @@ from pyrogram.errors import ChannelInvalid, FloodWait, PeerIdInvalid
 
 DELAY_AMOUNT = 10
 
-version = 122
+version = 123
 
 def get_config_data(path_file_config):
     """get default configuration data from file config.ini
@@ -428,12 +428,18 @@ def update_cache(CACHE_FILE, list_posted):
     with open(CACHE_FILE, mode="w") as file:
         file.write(json.dumps(list_posted))
 
+def get_valid_ids(useraccount, origin_chat):
 
-def get_last_message_id(useraccount, origin_chat):
+    global chat_ids,last_message_id
 
-    iter_message = useraccount.get_chat_history(origin_chat)
-    message = next(iter_message)
-    return message.id
+    chat_ids=[]
+    print('Getting messages...')
+    his=useraccount.get_chat_history(origin_chat)
+    for message in his:chat_ids.append(message.id)
+    last_message_id=chat_ids[0]
+    chat_ids.sort()
+
+    return last_message_id,chat_ids
 
 
 def get_files_type_excluded():
@@ -524,7 +530,9 @@ def ensure_connection(client_name):
     if client_name == "user":
         if Path(f"{client_name}.session").exists():
             try:
-                useraccount = pyrogram.Client(client_name)
+                useraccount = pyrogram.Client(
+                    client_name,takeout=True
+                )
                 useraccount.start()
                 return useraccount
             except:
@@ -678,7 +686,8 @@ def main():
     print("--------------------------------------")
 
     
-    last_message_id = get_last_message_id(useraccount, origin_chat)
+    #last_message_id = get_last_message_id(useraccount, origin_chat)
+    get_valid_ids(useraccount, origin_chat)
 
     
     if NEW is None:
@@ -687,11 +696,9 @@ def main():
         int_task_type = NEW
     list_posted = get_list_posted(CACHE_FILE, int_task_type)
 
-    message_id = get_first_message_id(list_posted)
-    while message_id < last_message_id:
-        message_id = message_id + 1
-        if message_id in list_posted:
-            continue
+    ids_to_try=chat_ids[len(list_posted):]
+
+    for message_id in ids_to_try:
 
         message = get_message(tg, origin_chat, message_id)
 
