@@ -11,8 +11,9 @@ import pyrogram
 from pyrogram.errors import ChannelInvalid, FloodWait, PeerIdInvalid, UsernameInvalid
 
 DELAY_AMOUNT = 10
+COPY_MESSAGES = False
 
-version = 123
+version = 124
 
 def get_config_data(path_file_config):
     """get default configuration data from file config.ini
@@ -514,6 +515,8 @@ def check_chat_id(MODE, tg, chat_id):
         except ValueError:
             pass
         chat_obj = tg.get_chat(chat_id)
+        print(f"Chat tittle: {chat_title}")
+        print(f"chat_obj: {chat_obj}")
         return chat_obj
     except ChannelInvalid:  # When you are not part of the channel
         print("\nNon-accessible chat")
@@ -601,6 +604,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--orig", help="chat_id of origin channel/group")
     parser.add_argument("--dest", help="chat_id of destination channel/group")
+    parser.add_argument("--copy", default=False, type=bool, help="If True copies messages from origin to destination. Else forward messages.")
     parser.add_argument(
         "--mode",
         choices=["user", "bot"],
@@ -628,6 +632,8 @@ def main():
         MODE = config_data.get("mode")
     else:
         MODE = options.mode
+
+    COPY_MESSAGES = options.copy
 
     global FILES_TYPE_EXCLUDED
     FILES_TYPE_EXCLUDED = get_files_type_excluded()
@@ -705,42 +711,58 @@ def main():
     #last_message_id = get_last_message_id(useraccount, origin_chat)
     get_valid_ids(useraccount, origin_chat)
 
-    
-    if NEW is None:
-        int_task_type = task_type()
+    messages = list()
+
+    print("Checking messages")
+
+    counter = 0
+    for message in tg.get_chat_history(destination_chat):
+        counter += 1
+
+    for message in tg.get_chat_history(origin_chat):
+        messages.append(message)
+
+    new_messages = list()
+
+    for i, message in enumerate(reversed(messages)):
+        if i < counter:
+            continue
+
+        new_messages.append(message)
+
+    if COPY_MESSAGES:
+        messages_id = [message.id for message in new_messages]
+        print("Forwarding messages")
+        forward_messages(messages_id)
     else:
-        int_task_type = NEW
-    list_posted = get_list_posted(CACHE_FILE, int_task_type)
-
-    ids_to_try=chat_ids[len(list_posted):]
-
-    for message_id in ids_to_try:
-
-        message = get_message(tg, origin_chat, message_id)
-
-        if is_empty_message(DELAY_SKIP, DELAY_AMOUNT, message, message_id, last_message_id):
-            list_posted += [message.id]
-            continue
-
-        func_sender = get_sender(message)
-
-        if must_be_ignored(func_sender, message_id, last_message_id):
-            list_posted += [message.id]
-            update_cache(CACHE_FILE, list_posted)
-            continue
-
-        func_sender(tg, message, destination_chat)
-        print(f"{message_id}/{last_message_id}")
-
-        list_posted += [message.id]
-        update_cache(CACHE_FILE, list_posted)
-
-        wait_a_moment(DELAY_SKIP, DELAY_AMOUNT, message_id)
+        copy_messages(new_messages)
 
     print(
         "\nChat cloning finished! :)\n"
         + "If you are not going to continue this task for these chats, "
         + "delete the posted.json file"
     )
+
+def copy_messages(messages):
+    for message in messages:
+        try:
+            tg.copy_message(destination_chat, origin_chat, message.id, caption=f"{message.from_user.username}: {str(message.date)}")
+        except FloodWait as e:
+            print(f"Got flood error, waiting for {e.value} seconds")
+            time.sleep(e.value)  # Wait "value" seconds before continuing
+            tg.copy_message(destination_chat, origin_chat, message.id, caption=f"{message.from_user.username}: {str(message.date)}")
+
+
+def forward_messages(messages_ids):
+    while len(messages_ids) != 0:
+        sending_messages = min(100, len(messages_ids))
+        try:
+            tg.forward_messages(destination_chat, origin_chat, messages_ids[:sending_messages])
+        except FloodWait as e:
+            print(f"Got flood error, waiting for {e.value} seconds")
+            time.sleep(e.value)  # Wait "value" seconds before continuing
+            tg.forward_messages(destination_chat, origin_chat, messages_ids[:sending_messages])
+        messages_ids = messages_ids[sending_messages: ]
+        time.sleep(1.0)
 
 main()
