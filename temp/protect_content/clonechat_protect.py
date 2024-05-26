@@ -11,7 +11,7 @@ from typing import Union
 import pyrogram
 from pyrogram.errors import ChannelInvalid, PeerIdInvalid
 
-from setup import version
+version = 121
 
 from . import cloneplan
 from .pipe import download, upload

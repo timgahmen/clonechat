@@ -3,7 +3,7 @@ from __future__ import annotations
 import asyncio
 from pathlib import Path
 
-from setup import version
+version = 121
 
 from . import clonechat_protect, cloneplan
 from .pipe import download

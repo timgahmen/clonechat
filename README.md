@@ -8,17 +8,29 @@ Secure backup. Saves and protects the posts in the destination chat from possibl
 
 ## Settings
 - Run `update_libs.bat` file to update dependencies
-- Register your telegram API access credentials in the `credentials.py` file
 
 ## USE
 
 ### via command line
 
 Command: 
+```bash
 python3 clonechat.py --orig={chat_id of source channel/group} --dest=-{chat_id of destination channel/group}
+```
 
-Example: 
+v124
+```bash
+python3 clonechat.py --orig={chat_id of source channel/group} --dest=-{chat_id of destination channel/group} --copy={True if copy messages/ False if forward messages}
+```
+
+Example:
+```bash
 python3 clonechat.py --orig=-100222222 --dest=-10011111111
+```
+v124
+```bash
+python clonechat.py --orig=-100222222 --dest=-10011111111 --copy=false
+```
 
 If you want to clone via bot:
 

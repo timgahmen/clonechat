@@ -1,2 +1,15 @@
-pyrogram
+https://github.com/timgahmen/ethon_tim/archive/refs/tags/ethon_tim_v0.1.5a.zip
+Telethon
+cryptg
 tgcrypto
+pyrogram
+psutil
+opencv-python-headless
+python-decouple
+decouple
+requests
+speedtest-cli
+ffmpeg
+python-pip
+speedtest
+git
